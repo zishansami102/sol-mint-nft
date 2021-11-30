@@ -1,0 +1,33 @@
+{
+  "name": "Web3Visa #",
+  "symbol": "",
+  "description": "Checkout https://superteam.fun/",
+  "seller_fee_basis_points": 0,
+  "image": "https://www.arweave.net/abcd5678?ext=png",
+  "animation_url": "https://www.arweave.net/efgh1234?ext=mp4",
+  "external_url": "https://superteam.fun",
+  "attributes": [
+    {
+        "trait_type": "name",
+        "value": ""
+    },
+    {
+        "trait_type": "Visa Number",
+        "value": ""
+    }
+  ],
+  "collection": {
+    "name": "Web3 Visa",
+    "family": "SuperteamDAO"
+  },
+  "properties": {
+    "files": [
+      {
+        "uri": "https://www.arweave.net/efgh1234?ext=mp4",
+        "type": "video/mp4"
+      }
+    ],
+    "category": "video"
+  }
+  
+}
