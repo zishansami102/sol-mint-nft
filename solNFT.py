@@ -155,7 +155,7 @@ class SolNFT(object):
         """
         try:
             video_metadata = self._getVideoNFTMetadata(name, count, video_link)
-            video_metadata_uri = self.uploadMetadataOnArweave(video_metadata)
+            video_metadata_uri = self._uploadMetadataOnArweave(video_metadata)
         except Exception as err:
             return {"status": "failure", "error": err}
         
