@@ -13,6 +13,9 @@ from metaplex.metadata import (
     update_metadata_instruction
 )
 from utils.execution_engine import execute
+from PIL import Image, ImageDraw, ImageFont
+import io
+import qrcode
 
 
 class SolNFT(object):
@@ -27,16 +30,22 @@ class SolNFT(object):
         self.metadata_video_template = json.load(open(file_dir + '/metadata_video.json'))
         self.metadata_image_template = json.load(open(file_dir + '/metadata_image.json'))
 
-    def mintNFT(self, address, name, count, uri):
+        self.NFT_TEMPLATE = Image.open(file_dir + '/template.png')
+        self.NAME_FONT = ImageFont.truetype(file_dir + '/PlusJakartaSans-Medium.ttf', 31)
+        self.OTH_FONT = ImageFont.truetype(file_dir + '/Roboto-Regular.ttf', 20)
+
+
+    def mintNFT(self, address, name, twitter_username, count):
         # checking address, name, count and uri as non null
-        status, output = self._validate_params(address, name, count, uri)
+        status, output = self._validate_params(address, name, count, twitter_username)
         if status is False:
             return output
 
         try:
-            metadata = self._getImageNFTMetadata(name, count, uri)
-            print("Uploading metadata on Arweave")
-            metadata_uri = self.uploadMetadataOnArweave(metadata)
+            img = self._generateImage(address, name, count, twitter_username)
+            img_uri = self._uploadImageOnArweave(img)
+            metadata = self._getImageNFTMetadata(name, count, img_uri)
+            metadata_uri = self._uploadMetadataOnArweave(metadata)
         except Exception as err:
             return {"status": "failure", "error": err}
         try:
@@ -44,7 +53,41 @@ class SolNFT(object):
         except Exception as err:
             return {"status": "failure", "error": err}
         return {"status": "success", "metadata":metadata, "metdata_uri":metadata_uri, "mint_token_id":mint_token_id}
-        
+
+    def _generateImage(self, address, name, count, twitter_username):
+        print("Generating NFT Image for "+str(twitter_username))
+        img = self.NFT_TEMPLATE.copy()
+        draw = ImageDraw.Draw(img)
+        addr = address[0:4] + "..." + address[-4:]
+        draw.text(xy=(130,290),text=name,fill=(0,0,0),font=self.NAME_FONT)
+        draw.text(xy=(50,50),text="#"+str(count),fill=(255,255,255),font=self.OTH_FONT)
+        draw.text(xy=(482,380),text=addr,fill=(0,0,0),font=self.OTH_FONT)
+        qr = qrcode.make('https://superteam.fun/'+twitter_username).resize((94,94))
+        img.paste(qr,(680,320))
+        return img
+
+    def _uploadImageOnArweave(self, img):
+        print("Uploading NFT Image to Arweave")
+        output = io.BytesIO()
+        img.save(output, format="png")
+        img_as_string = output.getvalue()
+        attempts = 0
+        err_msg=""
+        while attempts < 3:
+            try:
+                if attempts > 0:
+                    print("retrying... ("+str(attempts+1)+")")
+                transaction = arTransaction(self.ar_wallet, data=img_as_string)
+                transaction.add_tag('Content-Type', 'image/jpeg')
+                transaction.sign()
+                transaction.send()
+                break
+            except Exception as err:
+                err_msg=err
+                attempts += 1
+        if attempts == 3:
+            raise Exception(err_msg)
+        return API_URL+"/"+transaction.id
 
     def _mintNFT(self, address, metadata_uri, count):
         print("Deploying token account for NFT No. "+str(count))
@@ -55,7 +98,8 @@ class SolNFT(object):
         print("Mint successful!")
         return deployed_json['contract']
 
-    def uploadMetadataOnArweave(self, metadata):
+    def _uploadMetadataOnArweave(self, metadata):
+        print("Uploading metadata on Arweave")
         attempts = 0
         err_msg=""
         while attempts < 3:
@@ -92,15 +136,17 @@ class SolNFT(object):
         metadata['properties']['files'][0]['uri'] = uri
         return metadata
 
-    def _validate_params(self, address, name, count, uri):
-        if address is None:
+    def _validate_params(self, address, name, count, twitter_username):
+        if address is None or address == "":
             return False, {"status": "failure", "error": "address cannot be null"}
-        if name is None:
+        if len(address)<32 and len(address)>44:
+            return False, {"status": "failure", "error": "invalid address"}
+        if name is None or name == "":
             return False, {"status": "failure", "error": "name cannot be null"}
         if count is None:
             return False, {"status": "failure", "error": "count cannot be null"}
-        if uri is None:
-            return False, {"status": "failure", "error": "uri cannot be null"}
+        if twitter_username is None or twitter_username == "":
+            return False, {"status": "failure", "error": "twitter_username cannot be null"}
         return True, {}
 
     def update_NFT(self, mint_token_id, video_link, name, count, max_retries=3, max_timeout=60):
