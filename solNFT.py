@@ -43,7 +43,7 @@ class SolNFT(object):
             return output
 
         try:
-            img = self._generateImage(address, name, count, twitter_username)
+            img, date_time = self._generateImage(address, name, count, twitter_username)
             img_uri = self._uploadImageOnArweave(img)
             metadata = self._getImageNFTMetadata(name, count, img_uri)
             metadata_uri = self._uploadMetadataOnArweave(metadata)
@@ -53,7 +53,7 @@ class SolNFT(object):
             mint_token_id = self._mintNFT(address, metadata_uri, count)
         except Exception as err:
             return {"status": "failure", "error": err}
-        return {"status": "success", "metadata":metadata, "metdata_uri":metadata_uri, "mint_token_id":mint_token_id}
+        return {"status": "success", "metadata":metadata, "metdata_uri":metadata_uri, "mint_token_id":mint_token_id, "datetime":date_time}
 
     def _generateImage(self, address, name, count, twitter_username):
         print("Generating NFT Image for "+str(twitter_username))
@@ -66,7 +66,7 @@ class SolNFT(object):
         draw.text(xy=(482,380),text=addr,fill=(0,0,0),font=self.OTH_FONT)
         qr = qrcode.make('https://superteam.fun/'+twitter_username).resize((94,94))
         img.paste(qr,(680,320))
-        return img
+        return img, date_time
 
     def _uploadImageOnArweave(self, img):
         print("Uploading NFT Image to Arweave")
