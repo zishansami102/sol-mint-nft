@@ -16,6 +16,7 @@ from utils.execution_engine import execute
 from PIL import Image, ImageDraw, ImageFont
 import io
 import qrcode
+import datetime
 
 
 class SolNFT(object):
@@ -59,8 +60,9 @@ class SolNFT(object):
         img = self.NFT_TEMPLATE.copy()
         draw = ImageDraw.Draw(img)
         addr = address[0:4] + "..." + address[-4:]
-        draw.text(xy=(130,290),text=name,fill=(0,0,0),font=self.NAME_FONT)
-        draw.text(xy=(50,50),text="#"+str(count),fill=(255,255,255),font=self.OTH_FONT)
+        date_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M %p")
+        draw.text(xy=(132,290),text=name,fill=(0,0,0),font=self.NAME_FONT)
+        draw.text(xy=(132,375),text=date_time,fill=(0,0,0),font=self.OTH_FONT)
         draw.text(xy=(482,380),text=addr,fill=(0,0,0),font=self.OTH_FONT)
         qr = qrcode.make('https://superteam.fun/'+twitter_username).resize((94,94))
         img.paste(qr,(680,320))
@@ -138,7 +140,7 @@ class SolNFT(object):
     def _validate_params(self, address, name, count, twitter_username):
         if address is None or address == "":
             return False, {"status": "failure", "error": "address cannot be null"}
-        if len(address)<32 and len(address)>44:
+        if len(address)<32 or len(address)>44:
             return False, {"status": "failure", "error": "invalid address"}
         if name is None or name == "":
             return False, {"status": "failure", "error": "name cannot be null"}
