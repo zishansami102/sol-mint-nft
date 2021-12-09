@@ -128,7 +128,6 @@ class SolNFT(object):
         
     def _getVideoNFTMetadata(self, name, count, uri):
         metadata = self.metadata_video_template.copy()
-        metadata['image'] = uri
         metadata['animation_url'] = uri
         metadata['name'] = metadata['name'] + str(count)
         metadata['attributes'][0]['value'] = name
