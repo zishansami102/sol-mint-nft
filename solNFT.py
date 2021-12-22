@@ -65,9 +65,9 @@ class SolNFT(object):
         if len(name)<=20:
             draw.text(xy=(132,290),text=name,fill=(0,0,0),font=self.NAME_FONT)
         else:
-            draw.text(xy=(132,290),text=name[0:13]+"..."+name[-4:],fill=(0,0,0),font=self.NAME_FONT)
+            draw.text(xy=(132,290),text=name[0:17]+"...",fill=(0,0,0),font=self.NAME_FONT)
         draw.text(xy=(132,375),text=date_time,fill=(0,0,0),font=self.OTH_FONT)
-        draw.text(xy=(482,380),text=addr,fill=(0,0,0),font=self.OTH_FONT)
+        draw.text(xy=(482,375),text=addr,fill=(0,0,0),font=self.OTH_FONT)
         draw.text(xy=(600,180),text="#"+str(count),fill=(0,0,0),font=self.COUNT_FONT)
         qr = qrcode.make('https://superteam.fun/'+twitter_username).resize((94,94))
         img.paste(qr,(680,320))
