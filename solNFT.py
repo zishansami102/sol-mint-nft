@@ -32,8 +32,9 @@ class SolNFT(object):
         self.metadata_image_template = json.load(open(file_dir + '/metadata_image.json'))
 
         self.NFT_TEMPLATE = Image.open(file_dir + '/template.png')
-        self.NAME_FONT = ImageFont.truetype(file_dir + '/PlusJakartaSans-Medium.ttf', 31)
+        self.NAME_FONT = ImageFont.truetype(file_dir + '/PlusJakartaSans-Bold.ttf', 31)
         self.OTH_FONT = ImageFont.truetype(file_dir + '/Roboto-Regular.ttf', 20)
+        self.COUNT_FONT = ImageFont.truetype(file_dir + '/RobotoMono-Bold.ttf', 53)
 
 
     def mintNFT(self, address, name, twitter_username, count):
@@ -53,7 +54,7 @@ class SolNFT(object):
             mint_token_id = self._mintNFT(address, metadata_uri, count)
         except Exception as err:
             return {"status": "failure", "error": err}
-        return {"status": "success", "metadata":metadata, "metdata_uri":metadata_uri, "mint_token_id":mint_token_id, "datetime":date_time}
+        return {"status": "success", "metadata":metadata, "metadata_uri":metadata_uri, "mint_token_id":mint_token_id, "datetime":date_time}
 
     def _generateImage(self, address, name, count, twitter_username):
         print("Generating NFT Image for "+str(twitter_username))
@@ -61,9 +62,13 @@ class SolNFT(object):
         draw = ImageDraw.Draw(img)
         addr = address[0:4] + "..." + address[-4:]
         date_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M %p")
-        draw.text(xy=(132,290),text=name,fill=(0,0,0),font=self.NAME_FONT)
+        if len(name)<=20:
+            draw.text(xy=(132,290),text=name,fill=(0,0,0),font=self.NAME_FONT)
+        else:
+            draw.text(xy=(132,290),text=name[0:17]+"...",fill=(0,0,0),font=self.NAME_FONT)
         draw.text(xy=(132,375),text=date_time,fill=(0,0,0),font=self.OTH_FONT)
-        draw.text(xy=(482,380),text=addr,fill=(0,0,0),font=self.OTH_FONT)
+        draw.text(xy=(482,375),text=addr,fill=(0,0,0),font=self.OTH_FONT)
+        draw.text(xy=(600,180),text="#"+str(count),fill=(0,0,0),font=self.COUNT_FONT)
         qr = qrcode.make('https://superteam.fun/'+twitter_username).resize((94,94))
         img.paste(qr,(680,320))
         return img, date_time
