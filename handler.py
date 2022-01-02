@@ -65,6 +65,7 @@ def hello(event, context):
     #     'metdata_uri': 'metdata_uri',
     #     'mint_token_id': 'mint_token_id'
     # }
+    print(result)
 
     if result['status'] != 'success':
         ## Handle errors
@@ -81,7 +82,7 @@ def hello(event, context):
         return
     
     metadata = result["metadata"]
-    metdata_uri = result["metdata_uri"]
+    metdata_uri = result["metadata_uri"]
     mint_token_id = result["mint_token_id"]
 
 
