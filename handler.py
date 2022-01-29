@@ -3,6 +3,8 @@ from solNFT import SolNFT
 import os
 import boto3
 from enum import Enum
+import traceback
+
 
 # change
 dynamodb = None
@@ -25,15 +27,17 @@ pvt_key = os.environ.get("PRIVATE_KEY")
 
 
 
-def updateNftStatus(twitter_uid, status):
+def updateNftStatus(twitter_uid, status, old_status):
     user_table.update_item(
         Key={
             'twitter_uid': twitter_uid
         },
         UpdateExpression='SET nft_gen_status = :ngs',
         ExpressionAttributeValues={
-            ':ngs': status
-        }
+            ':ngs': status,
+            ':old_ngs': old_status
+        },
+        ConditionExpression='begins_with (nft_gen_status, :old_ngs)'
     )
 
 
@@ -43,16 +47,22 @@ def hello(event, context):
     print(event)
     event_body = json.loads(event['Records'][0]['body'])
     print(event_body)
-    currentStatus = user_table.get_item(
-        Key={
-            'twitter_uid': event_body['twitter_uid']
-        }
-    )
-    print(currentStatus)
-    if currentStatus['Item']['nft_gen_status'] != NFTGenStatus.NOT_STARTED.value:
+    # currentStatus = user_table.get_item(
+    #     Key={
+    #         'twitter_uid': event_body['twitter_uid']
+    #     }
+    # )
+    # print(currentStatus)
+    # if currentStatus['Item']['nft_gen_status'] != NFTGenStatus.NOT_STARTED.value:
+    #     print("already minted / minting for " + event_body['twitter_uid'])
+    #     return
+    try :
+        updateNftStatus(event_body['twitter_uid'], NFTGenStatus.STARTED.value, NFTGenStatus.NOT_STARTED.value)
+    except Exception as e:
+        print(e)
+        print(traceback.format_exc())
         print("already minted / minting for " + event_body['twitter_uid'])
         return
-    updateNftStatus(event_body['twitter_uid'], NFTGenStatus.STARTED.value)
 
 
     result = sol_nft_object.mintNFT(address=event_body['address'], name=event_body['name'], twitter_username=event_body['name'], count=event_body['count'])
