@@ -69,7 +69,7 @@ class SolNFT(object):
         draw.text(xy=(132,375),text=date_time,fill=(0,0,0),font=self.OTH_FONT)
         draw.text(xy=(482,375),text=addr,fill=(0,0,0),font=self.OTH_FONT)
         draw.text(xy=(600,180),text="#"+str(count),fill=(0,0,0),font=self.COUNT_FONT)
-        qr = qrcode.make('https://superteam.fun/'+twitter_username).resize((94,94))
+        qr = qrcode.make('https://superteam.fun/'+address).resize((94,94))
         img.paste(qr,(680,320))
         return img, date_time
 
